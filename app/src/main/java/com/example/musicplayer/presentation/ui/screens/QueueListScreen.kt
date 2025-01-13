@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +32,7 @@ import com.example.musicplayer.presentation.viewmodel.MusicViewModel
 @Composable
 fun QueueListScreen(musicViewModel: MusicViewModel, navController: NavHostController) {
     val queueList by musicViewModel.queueList.collectAsState()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -74,6 +76,7 @@ fun QueueListScreen(musicViewModel: MusicViewModel, navController: NavHostContro
             LazyColumn {
                 items(queueList) { music ->
                     MusicItemCard(
+                        context = context,
                         music = music,
                         query = "",
                         onClick = {

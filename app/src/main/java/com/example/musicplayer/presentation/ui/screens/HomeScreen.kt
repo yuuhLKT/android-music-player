@@ -1,10 +1,13 @@
 package com.example.musicplayer.presentation.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,11 +19,12 @@ import com.example.musicplayer.presentation.ui.components.ShuffleButton
 import com.example.musicplayer.presentation.viewmodel.MusicViewModel
 
 @Composable
-fun HomeScreen(musicViewModel: MusicViewModel) {
+fun HomeScreen(context: Context, musicViewModel: MusicViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 32.dp),
+            .padding(top = 32.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -34,7 +38,7 @@ fun HomeScreen(musicViewModel: MusicViewModel) {
             FavoritesButton(onClick = {})
         }
 
-        RecentlyPlayedSection(musicViewModel = musicViewModel)
-        MostPlayedSection(musicViewModel = musicViewModel)
+        RecentlyPlayedSection(context = context, musicViewModel = musicViewModel)
+        MostPlayedSection(context = context, musicViewModel = musicViewModel)
     }
 }

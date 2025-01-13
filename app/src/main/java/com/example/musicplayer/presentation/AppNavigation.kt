@@ -1,5 +1,6 @@
 package com.example.musicplayer.presentation
 
+import android.content.Context
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -15,7 +16,7 @@ import com.example.musicplayer.presentation.viewmodel.MusicViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun AppNavigation(musicViewModel: MusicViewModel) {
+fun AppNavigation(context: Context, musicViewModel: MusicViewModel) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -40,7 +41,10 @@ fun AppNavigation(musicViewModel: MusicViewModel) {
             modifier = Modifier.padding(paddingValues),
         ) { page ->
             when (page) {
-                0 -> HomeScreen(musicViewModel = musicViewModel)
+                0 -> HomeScreen(
+                    musicViewModel = musicViewModel,
+                    context = context
+                )
                 1 -> SongsScreen(musicViewModel = musicViewModel)
                 2 -> PlaylistsScreen()
             }

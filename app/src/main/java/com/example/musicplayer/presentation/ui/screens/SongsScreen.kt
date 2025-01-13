@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -23,12 +24,14 @@ import com.example.musicplayer.presentation.ui.components.SearchBar
 import com.example.musicplayer.presentation.ui.components.ShuffleButton
 import com.example.musicplayer.presentation.viewmodel.MusicViewModel
 
+
 @Composable
 fun SongsScreen(musicViewModel: MusicViewModel) {
     var query by remember { mutableStateOf("") }
     val filteredMusicList by musicViewModel.filteredMusicList.collectAsState()
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
 
     LazyColumn {
         item {
@@ -49,7 +52,9 @@ fun SongsScreen(musicViewModel: MusicViewModel) {
         }
         items(filteredMusicList) { music ->
             MusicItemCard(
-                music = music, query = query,
+                context = context,
+                music = music,
+                query = query,
                 onClick = {
                     focusManager.clearFocus()
                     musicViewModel.setCurrentPlaylist(filteredMusicList)

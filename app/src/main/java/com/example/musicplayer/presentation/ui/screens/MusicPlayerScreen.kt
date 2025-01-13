@@ -1,5 +1,6 @@
 package com.example.musicplayer.presentation.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -19,26 +20,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil3.compose.rememberAsyncImagePainter
 import com.example.musicplayer.R
 import com.example.musicplayer.domain.model.MusicModel
 import com.example.musicplayer.presentation.viewmodel.MusicViewModel
+import com.example.musicplayer.util.ImageUtil
 import com.example.musicplayer.util.TimeUtil
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 fun MusicPlayerScreen(
+    context: Context,
     music: MusicModel,
     navController: NavHostController,
     musicViewModel: MusicViewModel
@@ -48,7 +51,8 @@ fun MusicPlayerScreen(
     val isPlaying by musicViewModel.isPlaying.collectAsState()
     val updatedMusic = musicViewModel.musicList.collectAsState().value.find { it.id == music.id } ?: music
 
-    val decodedImageUrl = URLDecoder.decode(updatedMusic.imageUrl, StandardCharsets.UTF_8.toString())
+    val imageBitmap = remember { ImageUtil.getImgArt(context, updatedMusic.filePath) }
+    val imagePainter = remember { BitmapPainter(imageBitmap.asImageBitmap()) }
 
     Column(
         modifier = Modifier
@@ -94,7 +98,7 @@ fun MusicPlayerScreen(
         }
 
         Image(
-            painter = rememberAsyncImagePainter(model = decodedImageUrl),
+            painter = imagePainter,
             contentDescription = "Album Art",
             modifier = Modifier
                 .size(200.dp)

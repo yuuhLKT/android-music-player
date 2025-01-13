@@ -1,5 +1,6 @@
 package com.example.musicplayer.presentation.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,14 +32,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
-import com.example.musicplayer.R
 import com.example.musicplayer.domain.model.MusicModel
 import com.example.musicplayer.presentation.theme.Purple80
+import com.example.musicplayer.util.ImageUtil
 import com.example.musicplayer.util.TimeUtil
 
 @Composable
 fun MusicItemCard(
+    context: Context,
     music: MusicModel,
     query: String,
     onClick: () -> Unit,
@@ -56,12 +59,11 @@ fun MusicItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val imageBitmap = remember { ImageUtil.getImgArt(context, music.filePath) }
+            val imagePainter = remember { BitmapPainter(imageBitmap.asImageBitmap()) }
+
             Image(
-                painter = rememberAsyncImagePainter(
-                    model = music.imageUrl,
-                    placeholder = painterResource(id = R.drawable.ic_music_player),
-                    error = painterResource(id = R.drawable.ic_music_player)
-                ),
+                painter = imagePainter,
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
@@ -95,8 +97,6 @@ fun MusicItemCard(
         }
     }
 }
-
-
 
 @Composable
 fun highlightQuery(text: String, query: String, highlightColor: Color): AnnotatedString {

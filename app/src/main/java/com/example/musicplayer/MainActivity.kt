@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NavHost(navController = navController, startDestination = "home") {
                                 composable("home") {
-                                    AppNavigation(musicViewModel)
+                                    AppNavigation(context = this@MainActivity, musicViewModel = musicViewModel)
                                 }
                                 composable("musicPlayer/{musicId}/{musicName}/{artist}/{imageUrl}") { backStackEntry ->
                                     val musicId = backStackEntry.arguments?.getString("musicId")?.toInt() ?: 0
@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
                                     val filePath = ""
 
                                     MusicPlayerScreen(
+                                        context = this@MainActivity,
                                         music = MusicModel(musicId, musicName, artist, 0L, imageUrl, filePath),
                                         navController = navController,
                                         musicViewModel = musicViewModel
@@ -104,6 +105,7 @@ class MainActivity : ComponentActivity() {
 
                             if (isMinimized && currentlyPlayingMusic != null) {
                                 MinimizedMusicPlayer(
+                                    context = this@MainActivity,
                                     music = currentlyPlayingMusic,
                                     musicViewModel = musicViewModel,
                                     isPlaying = musicViewModel.isPlaying.collectAsState().value,

@@ -13,7 +13,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,8 +53,11 @@ dependencies {
     implementation(libs.androidx.ui.android)
     implementation(libs.androidx.preference.ktx)
     testImplementation(libs.junit)
+    implementation(libs.koin.android)
+    implementation(libs.koin.android.compat)
     implementation(libs.androidx.foundation)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.media)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

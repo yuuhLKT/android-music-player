@@ -1,5 +1,6 @@
 package com.example.musicplayer.presentation.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -18,28 +19,35 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
 import com.example.musicplayer.R
 import com.example.musicplayer.domain.model.MusicModel
 import com.example.musicplayer.presentation.viewmodel.MusicViewModel
+import com.example.musicplayer.util.ImageUtil
 
 @Composable
 fun MinimizedMusicPlayer(
+    context: Context,
     music: MusicModel?,
     musicViewModel: MusicViewModel,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
 ) {
     if (music == null) return
+
+    val imageBitmap = remember { ImageUtil.getImgArt(context, music.filePath) }
+    val imagePainter = remember { BitmapPainter(imageBitmap.asImageBitmap()) }
 
     Box(
         modifier = modifier
@@ -55,7 +63,7 @@ fun MinimizedMusicPlayer(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = music.imageUrl),
+                painter = imagePainter,
                 contentDescription = "Album Art",
                 modifier = Modifier
                     .size(48.dp)
