@@ -69,12 +69,10 @@ fun MusicPlayerScreen(
         ) {
             IconButton(
                 onClick = {
-                    if (!isPlaying) {
-                        navController.navigate("home")
-                    } else {
+                    if (isPlaying) {
                         musicViewModel.minimizePlayer()
-                        navController.navigate("home")
                     }
+                    navController.navigate("home")
                 }
             ) {
                 Icon(
