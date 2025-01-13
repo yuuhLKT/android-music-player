@@ -64,28 +64,17 @@ fun MusicPlayerScreen(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = {
-                    navController.navigate("home")
-                    if (isPlaying) {
+                    if (!isPlaying) {
+                        navController.navigate("home")
+                    } else {
                         musicViewModel.minimizePlayer()
+                        navController.navigate("home")
                     }
-                }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_back),
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-            IconButton(
-                onClick = {
-                    musicViewModel.minimizePlayer()
-                    navController.navigate("home")
                 }
             ) {
                 Icon(
