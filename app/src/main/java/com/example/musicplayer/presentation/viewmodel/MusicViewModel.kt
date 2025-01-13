@@ -105,20 +105,6 @@ class MusicViewModel(context: Context) : ViewModel() {
         }
     }
 
-    private fun doShuffle(currentMusic: MusicModel?) {
-        val remainingMusic = _musicList.value.filter { it != currentMusic }.shuffled()
-        val shuffledQueue = if (currentMusic != null) {
-            listOf(currentMusic) + remainingMusic
-        } else {
-            remainingMusic
-        }
-
-        _queueList.value = shuffledQueue
-        _currentPlaylist.value = shuffledQueue
-
-        updateQueueList()
-    }
-
     fun playFirstMusic() {
         val firstMusic = _musicList.value[0]
         playOrPauseMusic(firstMusic)
