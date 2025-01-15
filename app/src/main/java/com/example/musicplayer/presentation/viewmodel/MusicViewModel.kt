@@ -1,8 +1,15 @@
 package com.example.musicplayer.presentation.viewmodel
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.media.MediaPlayer
+import android.os.IBinder
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -10,6 +17,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import com.example.musicplayer.data.MusicRepository
 import com.example.musicplayer.domain.model.MusicModel
+import com.example.musicplayer.services.MusicService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +26,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URLEncoder
 
-class MusicViewModel(context: Context) : ViewModel() {
+@SuppressLint("StaticFieldLeak")
+class MusicViewModel(private val context: Context) : ViewModel() {
     private val musicRepository = MusicRepository(context)
     private val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -48,7 +57,7 @@ class MusicViewModel(context: Context) : ViewModel() {
     val currentPlaylist: StateFlow<List<MusicModel>> = _currentPlaylist
 
     private val _isMinimized = MutableStateFlow(false)
-    var isMinimized: StateFlow<Boolean> = _isMinimized
+    val isMinimized: StateFlow<Boolean> = _isMinimized
 
     val _navigateToMusicPlayer = MutableStateFlow<MusicModel?>(null)
     val navigateToMusicPlayer: StateFlow<MusicModel?> = _navigateToMusicPlayer
@@ -57,14 +66,63 @@ class MusicViewModel(context: Context) : ViewModel() {
     val queueList: StateFlow<List<MusicModel>> = _queueList
 
     private val _isShuffleEnabled = MutableStateFlow(false)
-    val isShuffleEnabled: StateFlow<Boolean> = _isShuffleEnabled
 
     private var progressUpdateJob: Job? = null
+
+    @SuppressLint("StaticFieldLeak")
+    private var musicService: MusicService? = null
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+            mediaPlayer?.let { musicService?.setMediaPlayer(it) }
+            updateNotification()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            musicService = null
+        }
+    }
 
     init {
         loadMusicList()
         loadSavedState()
+        bindMusicService()
+        setupBroadcastReceivers()
     }
+
+    private fun bindMusicService() {
+        val intent = Intent(context, MusicService::class.java)
+        context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    @SuppressLint("InlinedApi")
+    private fun setupBroadcastReceivers() {
+        val filter = IntentFilter().apply {
+            addAction("PLAY_PAUSE_ACTION")
+            addAction("PREVIOUS_ACTION")
+            addAction("NEXT_ACTION")
+            addAction("FAVORITE_ACTION")
+        }
+        context.registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    "PLAY_PAUSE_ACTION" -> {
+                        if (_isPlaying.value) pauseMusic() else playMusic()
+                    }
+                    "PREVIOUS_ACTION" -> playPreviousSong()
+                    "NEXT_ACTION" -> playNextSong()
+                }
+            }
+        }, filter, Context.RECEIVER_NOT_EXPORTED)
+    }
+
+    private fun updateNotification() {
+        _currentlyPlayingMusic.value?.let { music ->
+            musicService?.updateNotification(music, _isPlaying.value)
+        }
+    }
+
 
     fun setCurrentPlaylist(playlist: List<MusicModel>) {
         _currentPlaylist.value = playlist
@@ -119,12 +177,14 @@ class MusicViewModel(context: Context) : ViewModel() {
         saveFavoriteState(updatedMusic)
     }
 
+
     private fun encodeForNavigation(str: String): String {
         return URLEncoder.encode(str, "UTF-8")
     }
 
     fun seekTo(position: Long) {
         mediaPlayer?.seekTo(position.toInt())
+        _currentDuration.value = position
     }
 
     fun replayTenSeconds() {
@@ -176,9 +236,11 @@ class MusicViewModel(context: Context) : ViewModel() {
                     if (player.isPlaying) {
                         _currentDuration.value = player.currentPosition.toLong()
                         _totalDuration.value = player.duration.toLong()
+                        updateNotification()
+
+                        delay(1000)
                     }
                 }
-                delay(100)
             }
         }
     }
@@ -189,6 +251,7 @@ class MusicViewModel(context: Context) : ViewModel() {
             _isPlaying.value = true
             startProgressUpdate()
             savePlaybackState(true)
+            updateNotification()
         }
     }
 
@@ -198,6 +261,7 @@ class MusicViewModel(context: Context) : ViewModel() {
             _isPlaying.value = false
             progressUpdateJob?.cancel()
             savePlaybackState(false)
+            updateNotification()
         }
     }
 
@@ -247,6 +311,7 @@ class MusicViewModel(context: Context) : ViewModel() {
                     savePlaybackState(true)
                     startProgressUpdate()
                     updateQueueList()
+                    updateNotification()
                     if (!_isMinimized.value) {
                         val encodedMusic = music.copy(
                             musicName = encodeForNavigation(music.musicName),
@@ -353,6 +418,7 @@ class MusicViewModel(context: Context) : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
+        context.unbindService(serviceConnection)
         progressUpdateJob?.cancel()
         mediaPlayer?.release()
     }
