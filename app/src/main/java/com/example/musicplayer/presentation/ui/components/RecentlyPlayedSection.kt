@@ -38,7 +38,7 @@ import com.example.musicplayer.util.ImageUtil
 fun RecentlyPlayedSection(context: Context, musicViewModel: MusicViewModel) {
     val recentlyPlayed = musicViewModel.filteredMusicList.collectAsState().value
         .sortedByDescending { it.lastPlayed }
-        .take(50)
+        .take(100)
 
     Column(
         modifier = Modifier.padding(16.dp)

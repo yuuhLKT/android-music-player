@@ -44,7 +44,7 @@ import com.example.musicplayer.util.ImageUtil
 fun MostPlayedSection(context: Context, musicViewModel: MusicViewModel) {
     val mostPlayed = musicViewModel.filteredMusicList.collectAsState().value
         .sortedByDescending { it.playCount }
-        .take(50)
+        .take(100)
 
     Column(
         modifier = Modifier.padding(16.dp)

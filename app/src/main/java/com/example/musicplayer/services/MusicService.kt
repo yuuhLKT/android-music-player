@@ -100,7 +100,7 @@ class MusicService : Service() {
             .setContentIntent(contentIntent)
             .setContentTitle(music.musicName)
             .setContentText(music.artist)
-            .setSmallIcon(R.drawable.ic_play_arrow)
+            .setSmallIcon(R.drawable.ic_notification)
             .setLargeIcon(ImageUtil.getImgArt(this, music.filePath))
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession.sessionToken)
@@ -111,6 +111,8 @@ class MusicService : Service() {
             .addAction(R.drawable.ic_prev_music, "Previous", prevIntent)
             .addAction(playPauseIcon, "Play/Pause", playIntent)
             .addAction(R.drawable.ic_next_music, "Next", nextIntent)
+            .setOngoing(true)
+            .setShowWhen(false)
 
         if (!isPlaying) {
             notificationBuilder.setOngoing(false)

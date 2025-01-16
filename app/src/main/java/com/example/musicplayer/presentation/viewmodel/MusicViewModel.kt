@@ -15,13 +15,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
+import com.example.musicplayer.R
 import com.example.musicplayer.data.MusicRepository
 import com.example.musicplayer.domain.model.MusicModel
+import com.example.musicplayer.domain.model.PlaylistModel
 import com.example.musicplayer.services.MusicService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URLEncoder
@@ -139,16 +144,16 @@ class MusicViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun shuffleMusic() {
-        if (_musicList.value.isNotEmpty()) {
+    fun shuffleMusic(musics: List<MusicModel>) {
+        if (musics.isNotEmpty()) {
             _isShuffleEnabled.value = true
 
             val currentMusic = _currentlyPlayingMusic.value
-            val availableMusic = _musicList.value.filter { it != currentMusic }
+            val availableMusic = musics.filter { it != currentMusic }
 
             if (availableMusic.isNotEmpty()) {
                 val randomMusic = availableMusic.random()
-                val remainingMusic = _musicList.value
+                val remainingMusic = musics
                     .filter { it != currentMusic && it != randomMusic }
                     .shuffled()
 
@@ -163,9 +168,10 @@ class MusicViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun playFirstMusic() {
-        val firstMusic = _musicList.value[0]
-        playOrPauseMusic(firstMusic)
+    fun playFirstMusic(musics: List<MusicModel>) {
+        if (musics.isNotEmpty()) {
+            playOrPauseMusic(musics.first())
+        }
     }
 
     fun toggleFavorite(music: MusicModel) {
@@ -202,11 +208,16 @@ class MusicViewModel(private val context: Context) : ViewModel() {
     }
 
     fun playNextSong() {
-        _currentlyPlayingMusic.value?.let { currentMusic ->
-            val currentIndex = _currentPlaylist.value.indexOf(currentMusic)
-            val nextIndex = (currentIndex + 1) % _currentPlaylist.value.size
-            val nextSong = _currentPlaylist.value[nextIndex]
-            playOrPauseMusic(nextSong, keepMinimized = true)
+        if (_currentPlaylist.value.isNotEmpty()) {
+            _currentlyPlayingMusic.value?.let { currentMusic ->
+                val currentIndex = _currentPlaylist.value.indexOf(currentMusic)
+                val nextIndex = (currentIndex + 1) % _currentPlaylist.value.size
+                val nextSong = _currentPlaylist.value[nextIndex]
+                playOrPauseMusic(nextSong, keepMinimized = true)
+            }
+        } else {
+            _isPlaying.value = false
+            mediaPlayer?.stop()
         }
     }
 
@@ -413,6 +424,60 @@ class MusicViewModel(private val context: Context) : ViewModel() {
         _musicList.value.forEach { music ->
             music.playCount = sharedPreferences.getInt("music_play_count_${music.id}", 0)
             music.lastPlayed = sharedPreferences.getLong("music_last_played_${music.id}", 0L)
+        }
+    }
+
+    fun getRecentlyPlayedPlaylist(): StateFlow<PlaylistModel> {
+        return _musicList
+            .map { musicList ->
+                val recentlyPlayed = musicList.sortedByDescending { it.lastPlayed }.take(100)
+                PlaylistModel(
+                    playlistName = "Recently Played",
+                    songCount = recentlyPlayed.size,
+                    imageResId = R.drawable.ic_recently_played_playlist,
+                    playlistId = 1,
+                    musics = recentlyPlayed
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, PlaylistModel("", 0, 0, 0, emptyList()))
+    }
+
+    fun getMostPlayedPlaylist(): StateFlow<PlaylistModel> {
+        return _musicList
+            .map { musicList ->
+                val mostPlayed = musicList.sortedByDescending { it.playCount }.take(100)
+                PlaylistModel(
+                    playlistName = "Most Played",
+                    songCount = mostPlayed.size,
+                    imageResId = R.drawable.ic_most_played_playlist,
+                    playlistId = 2,
+                    musics = mostPlayed
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, PlaylistModel("", 0, 0, 0, emptyList()))
+    }
+
+    fun getFavoritesPlaylist(): StateFlow<PlaylistModel> {
+        return _musicList
+            .map { musicList ->
+                val favorites = musicList.filter { it.isFavorite }
+                PlaylistModel(
+                    playlistName = "Favorites",
+                    songCount = favorites.size,
+                    imageResId = R.drawable.ic_favorite_fill,
+                    playlistId = 3,
+                    musics = favorites
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, PlaylistModel("", 0, 0, 0, emptyList()))
+    }
+
+    fun getPlaylistById(playlistId: Int): PlaylistModel {
+        return when (playlistId) {
+            1 -> getRecentlyPlayedPlaylist().value
+            2 -> getMostPlayedPlaylist().value
+            3 -> getFavoritesPlaylist().value
+            else -> PlaylistModel("", 0, 0, 0, emptyList())
         }
     }
 

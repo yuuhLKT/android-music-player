@@ -72,7 +72,7 @@ fun MusicPlayerScreen(
                     if (isPlaying) {
                         musicViewModel.minimizePlayer()
                     }
-                    navController.navigate("home")
+                    navController.navigate("app_navigation")
                 }
             ) {
                 Icon(

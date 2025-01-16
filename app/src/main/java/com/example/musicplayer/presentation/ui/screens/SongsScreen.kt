@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import com.example.musicplayer.domain.model.MusicModel
 import com.example.musicplayer.presentation.ui.components.MusicItemCard
 import com.example.musicplayer.presentation.ui.components.PlayButton
 import com.example.musicplayer.presentation.ui.components.SearchBar
@@ -48,7 +49,7 @@ fun SongsScreen(musicViewModel: MusicViewModel) {
             )
         }
         item {
-            ActionButtonsRow(musicViewModel)
+            ActionButtonsRow(filteredMusicList, musicViewModel)
         }
         items(filteredMusicList) { music ->
             MusicItemCard(
@@ -66,7 +67,7 @@ fun SongsScreen(musicViewModel: MusicViewModel) {
 }
 
 @Composable
-fun ActionButtonsRow(musicViewModel: MusicViewModel) {
+fun ActionButtonsRow(musics: List<MusicModel>, musicViewModel: MusicViewModel) {
     Row(
         modifier = Modifier
             .padding(top = 12.dp, bottom = 12.dp)
@@ -75,8 +76,8 @@ fun ActionButtonsRow(musicViewModel: MusicViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         ShuffleButton(onClick = {
-            musicViewModel.shuffleMusic()
+            musicViewModel.shuffleMusic(musics)
         })
-        PlayButton(onClick = { musicViewModel.playFirstMusic() })
+        PlayButton(onClick = { musicViewModel.playFirstMusic(musics) })
     }
 }

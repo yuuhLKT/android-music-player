@@ -16,19 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.musicplayer.domain.model.MusicModel
 import com.example.musicplayer.presentation.AppNavigation
 import com.example.musicplayer.presentation.theme.MusicPlayerTheme
 import com.example.musicplayer.presentation.ui.components.MinimizedMusicPlayer
-import com.example.musicplayer.presentation.ui.screens.MusicPlayerScreen
-import com.example.musicplayer.presentation.ui.screens.QueueListScreen
 import com.example.musicplayer.presentation.viewmodel.MusicViewModel
 import com.example.musicplayer.presentation.viewmodel.MusicViewModelFactory
 import com.example.musicplayer.util.PermissionUtil
-import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -70,50 +64,22 @@ class MainActivity : ComponentActivity() {
                                 .align(Alignment.Center)
                         )
                     } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            NavHost(navController = navController, startDestination = "home") {
-                                composable("home") {
-                                    AppNavigation(context = this@MainActivity, musicViewModel = musicViewModel)
-                                }
-                                composable("musicPlayer/{musicId}/{musicName}/{artist}/{imageUrl}") { backStackEntry ->
-                                    val musicId = backStackEntry.arguments?.getString("musicId")?.toInt() ?: 0
-                                    val musicName = backStackEntry.arguments?.getString("musicName")?.let {
-                                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                                    } ?: ""
-                                    val artist = backStackEntry.arguments?.getString("artist")?.let {
-                                        URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                                    } ?: ""
-                                    val imageUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
-                                    val filePath = ""
+                        AppNavigation(
+                            context = this@MainActivity,
+                            musicViewModel = musicViewModel,
+                            navController = navController
+                        )
 
-                                    MusicPlayerScreen(
-                                        context = this@MainActivity,
-                                        music = MusicModel(musicId, musicName, artist, 0L, imageUrl, filePath),
-                                        navController = navController,
-                                        musicViewModel = musicViewModel
-                                    )
-                                }
-                                composable("queue_list_screen") {
-                                    QueueListScreen(
-                                        musicViewModel = musicViewModel,
-                                        navController = navController
-                                    )
-                                }
-                            }
-
-                            if (isMinimized && currentlyPlayingMusic != null) {
-                                MinimizedMusicPlayer(
-                                    context = this@MainActivity,
-                                    music = currentlyPlayingMusic,
-                                    musicViewModel = musicViewModel,
-                                    isPlaying = musicViewModel.isPlaying.collectAsState().value,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .offset(y = (-80).dp)
-                                )
-                            }
+                        if (isMinimized && currentlyPlayingMusic != null) {
+                            MinimizedMusicPlayer(
+                                context = this@MainActivity,
+                                music = currentlyPlayingMusic,
+                                musicViewModel = musicViewModel,
+                                isPlaying = musicViewModel.isPlaying.collectAsState().value,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .offset(y = (-80).dp)
+                            )
                         }
                     }
 
