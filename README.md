@@ -33,7 +33,8 @@ A modern **Music Player** for Android 8+ built using **Kotlin** and **Jetpack Co
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/music-player.git
+   git clone https://github.com/yuuhLKT/android-music-player.git
+   ```
    
 2. Open the project in Android Studio.
 
